@@ -1,11 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -26,20 +24,20 @@ public class UserController {
     }
 
     @PostMapping
-    public void addUser(@Valid @RequestBody User user) throws ValidationException{
+    public @Valid User addUser(@Valid @RequestBody User user) throws ValidationException{
         if (checkValidationUser(user)){
             users.put(user.getId(), user);
-            log.info("Успешное добавление пользователя: {}, логин - {}, Email - {}, день рождения - {}"
-                    , user.getName(), user.getLogin(), user.getEmail(), user.getBirthday());
+            log.info("Успешное добавление пользователя");
+            return user;
         }
+        return user;
     }
 
     @PutMapping
     public void changeUser(@Valid @RequestBody User user) throws ValidationException{
         if (checkValidationUser(user)){
             users.put(user.getId(), user);
-            log.info("Успешное изменение пользователя: {}, логин - {}, Email - {}, день рождения - {}"
-                    , user.getName(), user.getLogin(), user.getEmail(), user.getBirthday());
+            log.info("Успешное изменение пользователя");
         }
     }
 
