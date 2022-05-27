@@ -1,54 +1,62 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private final static LocalDate MIN_DATE_START_RELEASE = LocalDate.parse("1895-12-28");
+    private final FilmStorage inMemoryFilmStorage;
+    private final FilmService filmService;
 
-    private boolean checkValidationFilm(Film film) throws ValidationException{
-        if (film.getReleaseDate().isBefore(MIN_DATE_START_RELEASE)){
-            log.info("Ошибка валидации: дата релиза — раньше 28 декабря 1895 года");
-            throw new ValidationException("дата релиза раньше 28 декабря 1895 года");
-        } else if (film.getDuration().isNegative()){
-            log.info("Ошибка валидации: продолжительность фильма отрицательная");
-            throw new ValidationException("продолжительность фильма должна быть положительной");
-        }
-        return true;
+    @Autowired
+    public FilmController(FilmStorage inMemoryFilmStorage, FilmService filmService) {
+        this.inMemoryFilmStorage = inMemoryFilmStorage;
+        this.filmService = filmService;
     }
 
-    @PostMapping
+    @PostMapping("/films")
     public void addFilm(@Valid @RequestBody Film film) throws ValidationException{
-        if (checkValidationFilm(film)){
-            films.put(film.getId(), film);
-            log.info("Успешное добавление фильма: наименование - {}, символов в описании - {}, дата - {}, " +
-                            "продолжительность - {}",film.getName(), film.getDescription().length()
-                    , film.getReleaseDate(), film.getDuration());
-        }
+        inMemoryFilmStorage.addFilm(film);
     }
-
-    @PutMapping
+    @PutMapping("/films")
     public void changeFilm(@Valid @RequestBody Film film) throws ValidationException{
-        if (checkValidationFilm(film)){
-            films.put(film.getId(), film);
-            log.info("Успешное изменение фильма: наименование - {}, символов в описании - {}, дата - {}, " +
-                            "продолжительность - {}",film.getName(), film.getDescription().length()
-                    , film.getReleaseDate(), film.getDuration());
-        }
+        inMemoryFilmStorage.changeFilm(film);
+    }
+    @GetMapping("/films")
+    public Map<Integer,Film> allFilms(){
+        return inMemoryFilmStorage.getAllFilms();
     }
 
-    @GetMapping
-    public Map<Integer,Film> allFilms(){
-        return films;
+    @GetMapping("/films/{id}")
+    public Film findFilmById(@PathVariable int id){
+        return filmService.findFilmById(id);
+    }
+    @PutMapping("/films/{id}/like/{userId}")
+    public void addLike(@PathVariable int userId, @PathVariable int id){
+        filmService.addLike(userId, id);
+    }
+    @DeleteMapping("/films/{id}/like/{userId}")
+    public void deleteLike(@PathVariable int id, @PathVariable int userId){
+        filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/films/popular")
+    public List<Film> bestFilmByLike(
+            @RequestParam(value = "count", defaultValue = "10", required = false) Integer count){
+        return filmService.bestFilmByLike(count);
+    }
+
+    @DeleteMapping("/films/{id}")
+    public void deleteFilm(@PathVariable Integer id){
+        inMemoryFilmStorage.deleteFilm(id);
     }
 }
