@@ -2,10 +2,9 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmUserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +20,7 @@ public class InMemoryUserStorage implements UserStorage{
     public Map<Integer, User> getUsers() {
         return users;
     }
+
     private static Integer createNextId(){
         return globalIdUser++;
     }
@@ -32,6 +32,7 @@ public class InMemoryUserStorage implements UserStorage{
         }
         return true;
     }
+
     @Override
     public User addUser(User user) {
         if (checkValidationUser(user)){
@@ -54,9 +55,8 @@ public class InMemoryUserStorage implements UserStorage{
             throw new ValidationException("Отсутствует id пользователя");
         }
         if (!users.containsKey(user.getId())){
-            throw new ValidationException(String.format("Пользователя с id %s нет", user.getId()));
+            throw new FilmUserNotFoundException(String.format("Пользователя с id %s нет", user.getId()));
         }
-        //User user1 = findUserById(user.getId());
         if (checkValidationUser(user)){
             users.put(user.getId(), user);
             log.info("Успешное изменение пользователя");
@@ -70,7 +70,7 @@ public class InMemoryUserStorage implements UserStorage{
 
     public User findUserById(Integer id){
         if (users.get(id) == null){
-            throw new NotFoundException("Нет такого пользователя");
+            throw new FilmUserNotFoundException("Нет такого пользователя");
         }
         return users.get(id);
     }

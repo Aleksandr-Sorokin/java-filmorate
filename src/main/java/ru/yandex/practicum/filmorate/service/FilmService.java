@@ -2,12 +2,11 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmUserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,29 +22,19 @@ public class FilmService {
     }
 
     public void addLike(int idUser, int idFilm){
-        Film film = inMemoryFilmStorage.getAllFilms().get(idFilm);
-        if (inMemoryUserStorage.getAllUsers().get(idUser) == null){
-            throw new NotFoundException("Такого пользователя нет");
-        }
-        if (film == null){
-            throw new NotFoundException("Такого фильма нет");
-        }
-        film.setLike(idUser);
+        Film film = inMemoryFilmStorage.findFilmById(idFilm);
+        User user = inMemoryUserStorage.findUserById(idUser);
+        film.setLike(user.getId());
     }
 
     public void deleteLike(int idFilm, int idUser){
-        Film film = inMemoryFilmStorage.getAllFilms().get(idFilm);
-        if (inMemoryUserStorage.getAllUsers().get(idUser) == null){
-            throw new NotFoundException("Такого пользователя нет");
-        }
-        if (film == null){
-            throw new NotFoundException("Такого фильма нет");
-        }
-        film.getLike().remove(idUser);
+        Film film = inMemoryFilmStorage.findFilmById(idFilm);
+        User user = inMemoryUserStorage.findUserById(idUser);
+        film.getLike().remove(user.getId());
     }
 
     public List<Film> bestFilmByLike(Integer count){
-        return inMemoryFilmStorage.getAllFilms().values().stream()
+        return inMemoryFilmStorage.getAllFilms().stream()
                 .sorted((o1, o2) -> {
                     int result = Integer.valueOf(o1.getLike().size()).compareTo(Integer.valueOf(o2.getLike().size()));
                     return result * -1;
@@ -54,10 +43,10 @@ public class FilmService {
     }
 
     public Film findFilmById(int id){
-        Film film = inMemoryFilmStorage.getAllFilms().get(id);
-        if (film == null){
-            throw new NotFoundException(String.format("Фильм с id %s не найден", id));
+        if (id <= 0){
+            throw new FilmUserNotFoundException(String.format("Фильм с id %s не найден", id));
         }
+        Film film = inMemoryFilmStorage.getAllFilms().get(id);
         return film;
     }
 }

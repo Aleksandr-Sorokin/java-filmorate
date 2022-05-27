@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Slf4j
@@ -24,15 +23,17 @@ public class FilmController {
     }
 
     @PostMapping("/films")
-    public void addFilm(@Valid @RequestBody Film film) throws ValidationException{
-        inMemoryFilmStorage.addFilm(film);
+    public Film addFilm(@Valid @RequestBody Film film) throws ValidationException{
+        return inMemoryFilmStorage.addFilm(film);
     }
+
     @PutMapping("/films")
-    public void changeFilm(@Valid @RequestBody Film film) throws ValidationException{
-        inMemoryFilmStorage.changeFilm(film);
+    public Film changeFilm(@Valid @RequestBody Film film) throws ValidationException{
+        return inMemoryFilmStorage.changeFilm(film);
     }
+
     @GetMapping("/films")
-    public Map<Integer,Film> allFilms(){
+    public List<Film> allFilms(){
         return inMemoryFilmStorage.getAllFilms();
     }
 
@@ -40,10 +41,12 @@ public class FilmController {
     public Film findFilmById(@PathVariable int id){
         return filmService.findFilmById(id);
     }
+
     @PutMapping("/films/{id}/like/{userId}")
-    public void addLike(@PathVariable int userId, @PathVariable int id){
+    public void addLike(@PathVariable int id, @PathVariable int userId){
         filmService.addLike(userId, id);
     }
+
     @DeleteMapping("/films/{id}/like/{userId}")
     public void deleteLike(@PathVariable int id, @PathVariable int userId){
         filmService.deleteLike(id, userId);
