@@ -16,7 +16,7 @@ public class User {
     private String name;
     @NotNull
     private final LocalDate birthday;
-    private Set<Integer> friends = new HashSet<>();
+    private Set<Integer> friends;
 
     public User(String email, String name, String login, LocalDate birthday) {
         this.email = email;
@@ -27,17 +27,6 @@ public class User {
             this.name = name;
         }
         this.birthday = birthday;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setFriends(Integer friends) {
-        this.friends.add(friends);
-    }
-
-    public Set<Integer> getFriends() {
-        return friends;
+        this.friends = new HashSet<>();
     }
 }

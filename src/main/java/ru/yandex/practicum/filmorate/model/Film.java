@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
-import lombok.NonNull;
-import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.*;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -21,31 +19,32 @@ public class Film {
     private final LocalDate releaseDate;
     @NotNull
     private final Integer duration;
-    private Set<Integer> like;
+    private Set<Integer> like = new HashSet<>();
+    private Set<Genre> genres;
+    private Mpa mpa;
 
-    public Film(String name, String description, LocalDate releaseDate, Integer duration, Set<Integer> like) {
+    public Film(String name, String description, LocalDate releaseDate, Integer duration, Mpa mpa) {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
-        this.like = like;
-        if (like == null) {
-            this.like = new HashSet<>();
-        }
+        this.mpa = mpa;
     }
 
-    public Integer getId() {
-        return id;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Film film = (Film) o;
+        return Objects.equals(id, film.id) && Objects.equals(name, film.name) && Objects.equals(description, film.description) && Objects.equals(releaseDate, film.releaseDate) && Objects.equals(duration, film.duration) && Objects.equals(like, film.like) && Objects.equals(genres, film.genres) && Objects.equals(mpa, film.mpa);
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, releaseDate, duration, like, genres, mpa);
     }
 
-    public Set<Integer> getLike() {
-        return like;
-    }
-    public void setLike(int idUser) {
+    public void addLikes(Integer idUser) {
         this.like.add(idUser);
     }
 }
