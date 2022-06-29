@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.FilmUserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@Qualifier("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage{
     private final Map<Integer, User> users = new HashMap<>();
     private static Integer globalIdUser = 1;
@@ -25,17 +27,9 @@ public class InMemoryUserStorage implements UserStorage{
         return globalIdUser++;
     }
 
-    private boolean checkValidationUser(User user){
-        if (user.getBirthday().isAfter(LocalDate.now())){
-            log.warn("дата рождения не может быть в будущем");
-            throw new ValidationException("дата рождения не может быть в будущем");
-        }
-        return true;
-    }
-
     @Override
     public User addUser(User user) {
-        if (checkValidationUser(user)){
+        if (UserStorage.checkValidationUser(user, log)){
             user.setId(createNextId());
             users.put(user.getId(), user);
             log.info("Успешное добавление пользователя");
@@ -51,13 +45,10 @@ public class InMemoryUserStorage implements UserStorage{
 
     @Override
     public User changeUser(User user) {
-        if (user.getId() == null){
-            throw new ValidationException("Отсутствует id пользователя");
-        }
         if (!users.containsKey(user.getId())){
             throw new FilmUserNotFoundException(String.format("Пользователя с id %s нет", user.getId()));
         }
-        if (checkValidationUser(user)){
+        if (UserStorage.checkValidationUser(user, log)){
             users.put(user.getId(), user);
             log.info("Успешное изменение пользователя");
         }
